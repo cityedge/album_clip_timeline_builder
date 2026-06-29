@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.1
+
+- Updated the public release version to v1.0.1.
+- Changed the default silence threshold from -55 dBFS to -49 dBFS.
+- Changed the default standard audible gap from 3.000 seconds to 2.700 seconds.
+
 ## v1.0.0
 
 ### Added
@@ -26,6 +32,7 @@
 - `album_subtitles.srt` export.
 - `offset_image.txt` export.
 - `timesheet.txt` export with provisional titles derived from audio file names.
+- `tracklist.txt` export for YouTube descriptions and other publication text.
 - `project.json` export.
 - `project.json` import.
 - Required-file list dialog when project is loaded before audio/SRT files.

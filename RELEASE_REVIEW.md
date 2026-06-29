@@ -1,18 +1,20 @@
-# Release Review: Album Clip Timeline Builder v1.0.0
+# Release Review: Album Clip Timeline Builder v1.0.1
 
-This document summarizes the review performed before packaging Album Clip Timeline Builder v1.0.0.
+This document summarizes the review performed before packaging Album Clip Timeline Builder v1.0.1.
 
 ## Scope
 
-v1.0.0 is the initial public release. It provides a local browser-based workflow for arranging multiple WAV / MP3 clips on an album timeline, detecting audible regions, exporting an album WAV, merging SRT files, and producing timing helper files.
+v1.0.1 is the public release build based on v1.0.0 with adjusted default silence detection and track gap settings. It provides a local browser-based workflow for arranging multiple WAV / MP3 clips on an album timeline, detecting audible regions, exporting an album WAV, merging SRT files, and producing timing helper files, including a publication-ready track list text file.
 
 ## Reviewed areas
 
 ### Application naming and versioning
 
-- Updated browser title to `Album Clip Timeline Builder v1.0.0`.
-- Updated visible application title to `Album Clip Timeline Builder` with version badge `v1.0.0`.
-- Updated project export version to `1.0.0`.
+- Updated browser title to `Album Clip Timeline Builder v1.0.1`.
+- Updated visible application title to `Album Clip Timeline Builder` with version badge `v1.0.1`.
+- Updated project export version to `1.0.1`.
+- Confirmed default silence threshold is `-49 dBFS`.
+- Confirmed default standard audible gap is `2.700` seconds.
 - Removed release-facing development-stage wording.
 - Updated the application subtitle to reflect WAV / MP3 input and the current output files.
 
@@ -36,6 +38,7 @@ v1.0.0 is the initial public release. It provides a local browser-based workflow
 - Confirmed `album_subtitles.srt` export.
 - Confirmed `offset_image.txt` export.
 - Confirmed `timesheet.txt` export with provisional title column.
+- Confirmed `tracklist.txt` export using timesheet-derived MM:SS timings.
 - Confirmed `project.json` export and import.
 - Confirmed project required-file dialog for project-first workflow.
 
@@ -74,4 +77,4 @@ v1.0.0 is the initial public release. It provides a local browser-based workflow
 
 ## Release assessment
 
-The package is suitable for the v1.0.0 public release and GitHub Pages publication under the MIT License.
+The package is suitable for the v1.0.1 public release and GitHub Pages publication under the MIT License.

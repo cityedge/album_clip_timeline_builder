@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Album Clip Timeline Builder v1.0.0</title>
+  <title>Album Clip Timeline Builder v1.0.1</title>
   <style>
     :root {
       --bg: #0b0f17;
@@ -637,8 +637,8 @@
   <header>
     <div class="header-inner">
       <div class="header-title">
-        <h1><span data-i18n="appTitle">Album Clip Timeline Builder</span> <span class="app-version">v1.0.0</span></h1>
-        <p data-i18n="subtitle">複数の音声クリップ（WAV/MP3）をタイムライン配置し、曲間を整えて album.wav、album_subtitles.srt、offset_image.txt、timesheet.txt を出力します。</p>
+        <h1><span data-i18n="appTitle">Album Clip Timeline Builder</span> <span class="app-version">v1.0.1</span></h1>
+        <p data-i18n="subtitle">複数の音声クリップ（WAV/MP3）をタイムライン配置し、曲間を整えて album.wav、album_subtitles.srt、timesheet.txt、tracklist.txt、project.json、offset_image.txt を出力します。</p>
       </div>
       <div class="header-lang">
         <label for="langSelect" data-i18n="languageLabel">Language／言語</label>
@@ -686,7 +686,7 @@
               <div class="setting-lines">
                 <div class="setting-line">
                   <label><span data-i18n="thresholdDb">無音判定閾値</span>
-                    <input id="thresholdDb" type="number" step="1" value="-55" style="width: 78px" data-tip="tipThresholdDb"> dBFS
+                    <input id="thresholdDb" type="number" step="1" value="-49" style="width: 78px" data-tip="tipThresholdDb"> dBFS
                   </label>
                   <label><span data-i18n="blockMs">検出ブロック</span>
                     <input id="blockMs" type="number" min="1" step="1" value="10" style="width: 68px" data-tip="tipBlockMs"> ms
@@ -696,7 +696,7 @@
                 </div>
                 <div class="setting-line">
                   <label><span data-i18n="gapSeconds">標準曲間</span>
-                    <input id="gapSec" type="number" min="0" step="0.001" value="3.000" style="width: 90px" data-tip="tipGapSeconds">
+                    <input id="gapSec" type="number" min="0" step="0.001" value="2.700" style="width: 90px" data-tip="tipGapSeconds">
                     <span data-i18n="seconds">秒</span>
                   </label>
                   <button id="autoLayoutBtn" data-i18n="autoLayout" data-tip="tipAutoLayout">指定曲間で配置</button>
@@ -783,13 +783,14 @@
           <h2 data-i18n="exportPanel">書き出し</h2>
           <div class="row compact">
             <button id="exportWavBtn" class="primary" data-i18n="exportWav" data-tip="tipExportWav">album.wav を出力</button>
-            <button id="exportOffsetBtn" data-i18n="exportOffset" data-tip="tipExportOffset">offset_image.txt を出力</button>
             <button id="exportTimesheetBtn" data-i18n="exportTimesheet" data-tip="tipExportTimesheet">timesheet.txt を出力</button>
+            <button id="exportTracklistBtn" data-i18n="exportTracklist" data-tip="tipExportTracklist">tracklist.txt を出力</button>
             <label id="importProjectLabel" class="file-button" data-tip="tipImportProject">
               <span data-i18n="importProject">project.json を読み込み</span>
               <input id="projectInput" type="file" accept=".json,application/json" hidden>
             </label>
             <button id="exportProjectBtn" data-i18n="exportProject" data-tip="tipExportProject">project.json を出力</button>
+            <button id="exportOffsetBtn" data-i18n="exportOffset" data-tip="tipExportOffset">offset_image.txt を出力</button>
           </div>
           <p class="hint" data-i18n="exportHint">書き出し時は、各曲の実音区間を基準に不要な曲間無音を切り詰め、必要な無音をゼロサンプルとして追加します。音声サンプル自体のゲイン処理は行いません。</p>
           <div id="exportStatus" class="status"></div>
@@ -828,11 +829,11 @@
   </main>
 
   <script>
-    const APP_VERSION = "1.0.0";
+    const APP_VERSION = "1.0.1";
     const I18N = {
       ja: {
         appTitle: "Album Clip Timeline Builder",
-        subtitle: "複数の音声クリップ（WAV/MP3）をタイムライン配置し、曲間を整えて album.wav、album_subtitles.srt、offset_image.txt、timesheet.txt を出力します。",
+        subtitle: "複数の音声クリップ（WAV/MP3）をタイムライン配置し、曲間を整えて album.wav、album_subtitles.srt、timesheet.txt、tracklist.txt、project.json、offset_image.txt を出力します。",
         loadAndArrange: "読み込み・配置",
         loadFiles: "音声を読み込む",
         selectFiles: "ファイル選択",
@@ -871,6 +872,7 @@
         exportWav: "album.wav を出力",
         exportOffset: "offset_image.txt を出力",
         exportTimesheet: "timesheet.txt を出力",
+        exportTracklist: "tracklist.txt を出力",
         importProject: "project.json を読み込み",
         exportProject: "project.json を出力",
         exportHint: "書き出し時は、各曲の実音開始より前と実音終了より後をゼロサンプルとして扱います。1曲目の先頭と最終曲の末尾も同じ挙動です。音声サンプル自体のゲイン処理は行いません。",
@@ -940,6 +942,7 @@
         tipExportWav: "現在のタイムラインに基づいて、合成アルバムWAVを書き出します。",
         tipExportOffset: "各音源の00:00位置をoffset_image.txtとして書き出します。SRT合成用の基準時刻です。",
         tipExportTimesheet: "1曲目は00:00、2曲目以降は曲間中央の時刻をtimesheet.txtとして書き出します。各行には音源ファイル名由来の仮タイトルも入ります。",
+        tipExportTracklist: "YouTube説明欄などに使う曲リストをtracklist.txtとして書き出します。時刻はtimesheetの時刻をMM:SSへ3捨4入して丸めます。",
         tipImportProject: "保存済みのproject.jsonを読み込みます。音声ファイル本体は含まれないため、対応する音声ファイルを別途選択して読み込みます。",
         tipExportProject: "現在の曲順、無音判定位置、配置情報、SRT対応情報などをproject.jsonとして書き出します。",
         tipOverviewCanvas: "アルバム全体の概形です。曲区画をクリックすると、その曲間を拡大表示します。右端のENDは最終曲末尾です。",
@@ -1003,7 +1006,7 @@
       },
       en: {
         appTitle: "Album Clip Timeline Builder",
-        subtitle: "Arrange WAV/MP3 audio clips on a timeline, refine track gaps, then export album.wav, album_subtitles.srt, offset_image.txt, and timesheet.txt.",
+        subtitle: "Arrange WAV/MP3 audio clips on a timeline, refine track gaps, then export album.wav, album_subtitles.srt, timesheet.txt, tracklist.txt, project.json, and offset_image.txt.",
         loadAndArrange: "Load / Arrange",
         loadFiles: "Load audio files",
         selectFiles: "Select files",
@@ -1042,6 +1045,7 @@
         exportWav: "Export album.wav",
         exportOffset: "Export offset_image.txt",
         exportTimesheet: "Export timesheet.txt",
+        exportTracklist: "Export tracklist.txt",
         importProject: "Import project.json",
         exportProject: "Export project.json",
         exportHint: "On export, audio before each sound start and after each sound end is treated as zero samples, including the first-track head and last-track tail. No gain processing is applied.",
@@ -1111,6 +1115,7 @@
         tipExportWav: "Export the album WAV using the current timeline.",
         tipExportOffset: "Export each source audio 00:00 position as offset_image.txt. This is the reference for SRT offsetting.",
         tipExportTimesheet: "Export timesheet.txt: track 1 at 00:00 and later tracks at the center of each gap, with a provisional title derived from each audio filename.",
+        tipExportTracklist: "Export tracklist.txt for a YouTube description or similar use. Times are derived from timesheet timestamps and rounded to MM:SS with a 400 ms threshold.",
         tipImportProject: "Import a saved project.json. Audio files are not embedded, so select the matching audio files separately before loading.",
         tipExportProject: "Export project.json with the current order, silence positions, timeline settings, and SRT mapping.",
         tipOverviewCanvas: "Album overview. Click a track block to inspect its gap. END shows the final track tail.",
@@ -2445,7 +2450,7 @@
       $("srtDeleteBtn").disabled = isBusy || !hasSrtSelection;
       $("srtClearBtn").disabled = isBusy || !hasSrt;
       $("exportSrtBtn").disabled = isBusy || !loaded || !hasSrt;
-      ["detectBtn", "resetSilenceBtn", "autoLayoutBtn", "exportWavBtn", "exportOffsetBtn", "exportTimesheetBtn", "exportProjectBtn"].forEach(id => {
+      ["detectBtn", "resetSilenceBtn", "autoLayoutBtn", "exportWavBtn", "exportTimesheetBtn", "exportTracklistBtn", "exportProjectBtn", "exportOffsetBtn"].forEach(id => {
         $(id).disabled = isBusy || !loaded;
       });
       document.querySelectorAll("button[data-delta]").forEach(btn => {
@@ -2561,23 +2566,42 @@
       return (stripped || name || "untitled").replace(/[\t\r\n]+/g, " ").trim();
     }
 
+    function getTimesheetFrame(index) {
+      if (index === 0) return 0;
+      const track = tracks[index];
+      const prev = tracks[index - 1];
+      const prevSoundEnd = prev.albumZeroFrame + prev.soundEndFrame;
+      const currentSoundStart = track.albumZeroFrame + track.soundStartFrame;
+      return Math.round((prevSoundEnd + currentSoundStart) / 2);
+    }
+
     function makeTimesheetText() {
       if (!allTracksLoaded()) return "";
       const sr = getSampleRate();
       return tracks.map((track, i) => {
-        let frame;
-        if (i === 0) {
-          frame = 0;
-        } else {
-          const prev = tracks[i - 1];
-          const prevSoundEnd = prev.albumZeroFrame + prev.soundEndFrame;
-          const currentSoundStart = track.albumZeroFrame + track.soundStartFrame;
-          frame = Math.round((prevSoundEnd + currentSoundStart) / 2);
-        }
         return String(i + 1).padStart(2, "0")
-          + "\t" + formatClockFromFrames(frame, sr, true)
+          + "\t" + formatClockFromFrames(getTimesheetFrame(i), sr, true)
           + "\t" + makeTimesheetTitle(track.fileName);
       }).join("\n") + "\n";
+    }
+
+    function formatTracklistTimeFromFrames(frame, sampleRate) {
+      const totalMs = Math.max(0, Math.round(frame * 1000 / sampleRate));
+      const baseSec = Math.floor(totalMs / 1000);
+      const roundedSec = baseSec + ((totalMs % 1000) >= 400 ? 1 : 0);
+      const mm = String(Math.floor(roundedSec / 60)).padStart(2, "0");
+      const ss = String(roundedSec % 60).padStart(2, "0");
+      return mm + ":" + ss;
+    }
+
+    function makeTracklistText() {
+      if (!allTracksLoaded()) return "";
+      const sr = getSampleRate();
+      const lines = ["【Track List】"];
+      tracks.forEach((track, i) => {
+        lines.push(formatTracklistTimeFromFrames(getTimesheetFrame(i), sr) + " " + makeTimesheetTitle(track.fileName));
+      });
+      return lines.join("\n") + "\n";
     }
 
     function makeProjectJson() {
@@ -2590,7 +2614,7 @@
         processingMode,
         format: referenceFormat,
         gapSeconds: parseFloat($("gapSec").value || "0"),
-        silenceThresholdDb: parseFloat($("thresholdDb").value || "-55"),
+        silenceThresholdDb: parseFloat($("thresholdDb").value || "-49"),
         blockMs: parseFloat($("blockMs").value || "10"),
         tracks: tracks.map((track, i) => ({
           index: i + 1,
@@ -3120,7 +3144,7 @@ ${t("selectedFiles")}`, "ok");
 
     async function detectAllTracks() {
       if (!allTracksLoaded()) throw new Error(t("loadFirst"));
-      const threshold = parseFloat($("thresholdDb").value || "-55");
+      const threshold = parseFloat($("thresholdDb").value || "-49");
       const blockMs = parseFloat($("blockMs").value || "10");
       for (let i = 0; i < tracks.length; i++) {
         updateProgress(`${t("detectingTrack")} ${String(i + 1).padStart(2, "0")}: ${tracks[i].fileName}`, i, tracks.length);
@@ -3369,6 +3393,11 @@ ${t("selectedFiles")}`, "ok");
       $("exportTimesheetBtn").addEventListener("click", () => {
         if (!allTracksLoaded()) { setExportStatus(t("loadFirst"), "warn"); return; }
         downloadBlob(new Blob([makeTimesheetText()], { type: "text/plain;charset=utf-8" }), "timesheet.txt");
+        setExportStatus(t("exported"), "ok");
+      });
+      $("exportTracklistBtn").addEventListener("click", () => {
+        if (!allTracksLoaded()) { setExportStatus(t("loadFirst"), "warn"); return; }
+        downloadBlob(new Blob([makeTracklistText()], { type: "text/plain;charset=utf-8" }), "tracklist.txt");
         setExportStatus(t("exported"), "ok");
       });
       $("exportProjectBtn").addEventListener("click", () => {
