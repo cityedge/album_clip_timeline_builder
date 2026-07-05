@@ -1,10 +1,16 @@
 # Changelog
 
+## v1.0.2
+
+- Updated the public release version to v1.0.2.
+- No functional changes from the corrected v1.0.1 build.
+- Default settings remain: silence threshold `-49 dBFS`, standard audible gap `2.700` seconds.
+
 ## v1.0.1
 
 - Updated the public release version to v1.0.1.
-- Changed the default silence threshold from -55 dBFS to -49 dBFS.
-- Changed the default standard audible gap from 3.000 seconds to 2.700 seconds.
+- Changed the default silence threshold from `-55 dBFS` to `-49 dBFS`.
+- Changed the default standard audible gap from `3.000` seconds to `2.700` seconds.
 
 ## v1.0.0
 

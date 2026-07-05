@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Album Clip Timeline Builder v1.0.1</title>
+  <title>Album Clip Timeline Builder v1.0.2</title>
   <style>
     :root {
       --bg: #0b0f17;
@@ -637,7 +637,7 @@
   <header>
     <div class="header-inner">
       <div class="header-title">
-        <h1><span data-i18n="appTitle">Album Clip Timeline Builder</span> <span class="app-version">v1.0.1</span></h1>
+        <h1><span data-i18n="appTitle">Album Clip Timeline Builder</span> <span class="app-version">v1.0.2</span></h1>
         <p data-i18n="subtitle">複数の音声クリップ（WAV/MP3）をタイムライン配置し、曲間を整えて album.wav、album_subtitles.srt、timesheet.txt、tracklist.txt、project.json、offset_image.txt を出力します。</p>
       </div>
       <div class="header-lang">
@@ -829,7 +829,7 @@
   </main>
 
   <script>
-    const APP_VERSION = "1.0.1";
+    const APP_VERSION = "1.0.2";
     const I18N = {
       ja: {
         appTitle: "Album Clip Timeline Builder",
@@ -1931,6 +1931,15 @@
       drawDetailWaveform();
     }
 
+    function getOverviewEndStripWidthCss(widthCss) {
+      return Math.min(34, Math.max(22, widthCss * 0.055));
+    }
+
+    function getOverviewEndStripWidthDevice(widthDevice, ratio) {
+      const widthCss = widthDevice / (ratio || 1);
+      return getOverviewEndStripWidthCss(widthCss) * (ratio || 1);
+    }
+
     function drawOverviewWaveform() {
       const canvas = $("overviewCanvas");
       const meta = $("overviewMeta");
@@ -1950,7 +1959,7 @@
       }
       const endFrame = getAlbumOutputEndFrame();
       if (endFrame <= 0) return;
-      const endStripW = Math.min(34 * ratio, Math.max(22 * ratio, w * 0.055));
+      const endStripW = getOverviewEndStripWidthDevice(w, ratio);
       const albumW = Math.max(1, w - endStripW);
       const mid = h * WAVE_MID_RATIO;
       const ampH = h * WAVE_AMP_RATIO;
@@ -2400,7 +2409,7 @@
       const endFrame = getAlbumOutputEndFrame();
       if (endFrame <= 0 || rect.width <= 0) return;
       const x = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
-      const endStripW = Math.min(72, Math.max(42, rect.width * 0.11));
+      const endStripW = getOverviewEndStripWidthCss(rect.width);
       const albumW = Math.max(1, rect.width - endStripW);
       if (x >= albumW) {
         selectedIndex = tracks.length;

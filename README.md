@@ -1,4 +1,4 @@
-# Album Clip Timeline Builder v1.0.1
+# Album Clip Timeline Builder v1.0.2
 
 Album Clip Timeline Builder は、複数の音声クリップ（WAV / MP3）をアルバム形式のタイムラインへ並べ、実音開始・実音終了を基準に曲間を整えたうえで、アルバムWAV、結合SRT、タイムシート、YouTube説明欄向け曲リスト、オフセット表を出力するローカルHTMLアプリです。
 
@@ -63,7 +63,7 @@ The selected audio and subtitle files are processed locally in the browser. This
 MIT License. See `LICENSE`.
 
 
-## Default settings in v1.0.1
+## Default settings in v1.0.2
 
 - Silence threshold: `-49 dBFS`
 - Default audible gap: `2.700` seconds

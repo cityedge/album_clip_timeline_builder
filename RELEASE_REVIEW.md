@@ -1,20 +1,21 @@
-# Release Review: Album Clip Timeline Builder v1.0.1
+# Release Review: Album Clip Timeline Builder v1.0.2
 
-This document summarizes the review performed before packaging Album Clip Timeline Builder v1.0.1.
+This document summarizes the review performed before packaging Album Clip Timeline Builder v1.0.2.
 
 ## Scope
 
-v1.0.1 is the public release build based on v1.0.0 with adjusted default silence detection and track gap settings. It provides a local browser-based workflow for arranging multiple WAV / MP3 clips on an album timeline, detecting audible regions, exporting an album WAV, merging SRT files, and producing timing helper files, including a publication-ready track list text file.
+v1.0.2 is the public release build based on the corrected v1.0.1 build. It is a version update with no functional changes from that build. It provides a local browser-based workflow for arranging multiple WAV / MP3 clips on an album timeline, detecting audible regions, exporting an album WAV, merging SRT files, and producing timing helper files, including a publication-ready track list text file.
 
 ## Reviewed areas
 
 ### Application naming and versioning
 
-- Updated browser title to `Album Clip Timeline Builder v1.0.1`.
-- Updated visible application title to `Album Clip Timeline Builder` with version badge `v1.0.1`.
-- Updated project export version to `1.0.1`.
-- Confirmed default silence threshold is `-49 dBFS`.
-- Confirmed default standard audible gap is `2.700` seconds.
+- Updated browser title to `Album Clip Timeline Builder v1.0.2`.
+- Updated visible application title to `Album Clip Timeline Builder` with version badge `v1.0.2`.
+- Updated project export version to `1.0.2`.
+- Confirmed default silence threshold remains `-49 dBFS`.
+- Confirmed default standard audible gap remains `2.700` seconds.
+- Confirmed no functional changes were introduced for v1.0.2.
 - Removed release-facing development-stage wording.
 - Updated the application subtitle to reflect WAV / MP3 input and the current output files.
 
@@ -77,4 +78,4 @@ v1.0.1 is the public release build based on v1.0.0 with adjusted default silence
 
 ## Release assessment
 
-The package is suitable for the v1.0.1 public release and GitHub Pages publication under the MIT License.
+The package is suitable for the v1.0.2 public release and GitHub Pages publication under the MIT License.
