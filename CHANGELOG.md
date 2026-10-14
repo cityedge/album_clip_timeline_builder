@@ -1,5 +1,28 @@
 # Changelog
 
+## v1.1.0 — 2026-10-14
+
+- Packaged the integrated Timeline Builder and Edge Fixer as version 1.1.0.
+- Updated Japanese documentation and added a complete English user guide.
+
+### 2026-10-14: save dialog location
+
+- Use native audio file pickers on supported browsers and retain each file handle through decoding, editing and list handoff.
+- Start WAV saves in the current source file's directory. After saving elsewhere, subsequent saves of that track start in its new directory.
+- Remember the last successful save location across editor visits for inputs without file handles; use a stable browser picker ID as an additional fallback.
+- Preserve location handles from supported file drops. No input-directory selection or directory-wide access is required.
+
+### Integrated editing and handoff
+
+- Added optional head/tail editor, based on Suno WAV Edge Fixer v0.3.1, without modifying the standalone app.
+- Added native WAV save dialogs, byte-preserving edits for supported WAV inputs, and browser-decoded 24bit WAV conversion for other audio inputs.
+- Added list handoff, persistent edited badges during the current list session, natural insertion of new files, and arrangement invalidation only after saves or net list changes.
+- Preserved existing SRT assignments on editor list changes and added assignment controls for empty SRT slots.
+- Added unsaved-edit return choices and explicit save cancellation/failure handling.
+- Expanded Timeline Builder input beyond MP3 to browser-decodable audio.
+- Preserved frame-based timeline/export behavior and project schema 2. Standalone v1.0.2 ZIP remains the baseline.
+- The local app now consists of index.html plus two companion JavaScript files. No external dependencies are required.
+
 ## v1.0.2
 
 - Updated the public release version to v1.0.2.

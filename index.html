@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Album Clip Timeline Builder v1.0.2</title>
+  <title>Album Clip Timeline Builder v1.1.0</title>
   <style>
     :root {
       --bg: #0b0f17;
@@ -631,14 +631,18 @@
       th, td { white-space: normal; }
       .track-table-wrap { max-height: 430px; }
     }
-  </style>
+  #edgeEditorFrame {position:fixed; inset:0; width:100%; height:100%; border:0; z-index:10000; background:#0d1014;}
+    #trackBody tr.edge-edited td {background:rgba(52,211,153,.08);}
+    #trackBody tr.edge-edited td.file {color:#a7f3d0; border-left:3px solid #34d399;}
+    .edge-badge {display:inline-block; margin-left:6px; font-size:11px; color:#a7f3d0; border:1px solid #347b66; border-radius:4px; padding:1px 4px;}
+    </style>
 </head>
 <body>
   <header>
     <div class="header-inner">
       <div class="header-title">
-        <h1><span data-i18n="appTitle">Album Clip Timeline Builder</span> <span class="app-version">v1.0.2</span></h1>
-        <p data-i18n="subtitle">複数の音声クリップ（WAV/MP3）をタイムライン配置し、曲間を整えて album.wav、album_subtitles.srt、timesheet.txt、tracklist.txt、project.json、offset_image.txt を出力します。</p>
+        <h1><span data-i18n="appTitle">Album Clip Timeline Builder</span> <span class="app-version">v1.1.0</span></h1>
+        <p data-i18n="subtitle">複数の音声クリップをタイムライン配置し、曲間を整えて album.wav、album_subtitles.srt、timesheet.txt、tracklist.txt、project.json、offset_image.txt を出力します。</p>
       </div>
       <div class="header-lang">
         <label for="langSelect" data-i18n="languageLabel">Language／言語</label>
@@ -679,8 +683,9 @@
             <div>
               <div class="row">
                 <label><span data-i18n="selectFiles">ファイル選択</span>
-                  <input id="fileInput" type="file" accept=".wav,.mp3,audio/wav,audio/x-wav,audio/mpeg,audio/mp3" multiple data-tip="tipFileInput">
+                  <input id="fileInput" type="file" accept="audio/*,.wav,.mp3,.m4a,.aac,.ogg,.opus,.flac,.aif,.aiff" multiple data-tip="tipFileInput">
                 </label>
+                <button id="openEdgeBtn" data-i18n="openEdge" data-tip="tipOpenEdge">先頭・末尾の確認・編集</button>
                 <button id="loadBtn" class="primary" data-i18n="loadAndAuto" data-tip="tipLoadAndAuto">音声読み込み・自動配置</button>
               </div>
               <div class="setting-lines">
@@ -759,6 +764,7 @@
             <button id="srtMoveUpBtn" data-i18n="moveUp" data-tip="tipMoveUp">上へ</button>
             <button id="srtMoveDownBtn" data-i18n="moveDown" data-tip="tipMoveDown">下へ</button>
             <button id="srtDeleteBtn" data-i18n="deleteTrack" data-tip="tipDeleteTrack">削除</button>
+            <button id="assignSrtBtn" data-i18n="edgeAssignSrt">選択行にSRTを割当</button><input id="assignSrtInput" type="file" accept=".srt,text/plain" hidden>
             <button id="srtClearBtn" data-i18n="clearAll" data-tip="tipClearAll">全クリア</button>
           </div>
           <p class="hint" data-i18n="srtHint">SRTファイルは選択直後にファイル名昇順で並べます。曲リストの現在順とSRTリストの現在順を1対1対応させ、音声タイムラインのオフセットを加算して1本のSRTに合成します。</p>
@@ -828,12 +834,14 @@
     </div>
   </main>
 
+  <script src="edge-fixer.js"></script>
+  <script src="edge-integration.js"></script>
   <script>
-    const APP_VERSION = "1.0.2";
+    const APP_VERSION = "1.1.0";
     const I18N = {
       ja: {
         appTitle: "Album Clip Timeline Builder",
-        subtitle: "複数の音声クリップ（WAV/MP3）をタイムライン配置し、曲間を整えて album.wav、album_subtitles.srt、timesheet.txt、tracklist.txt、project.json、offset_image.txt を出力します。",
+        subtitle: "複数の音声クリップをタイムライン配置し、曲間を整えて album.wav、album_subtitles.srt、timesheet.txt、tracklist.txt、project.json、offset_image.txt を出力します。",
         loadAndArrange: "読み込み・配置",
         loadFiles: "音声を読み込む",
         selectFiles: "ファイル選択",
@@ -1006,7 +1014,7 @@
       },
       en: {
         appTitle: "Album Clip Timeline Builder",
-        subtitle: "Arrange WAV/MP3 audio clips on a timeline, refine track gaps, then export album.wav, album_subtitles.srt, timesheet.txt, tracklist.txt, project.json, and offset_image.txt.",
+        subtitle: "Arrange audio clips on a timeline, refine track gaps, then export album.wav, album_subtitles.srt, timesheet.txt, tracklist.txt, project.json, and offset_image.txt.",
         loadAndArrange: "Load / Arrange",
         loadFiles: "Load audio files",
         selectFiles: "Select files",
@@ -1702,6 +1710,7 @@
       tracks.forEach((track, i) => {
         const tr = document.createElement("tr");
         if (i === selectedIndex) tr.classList.add("selected");
+        if (track.edgeModified) tr.classList.add("edge-edited");
         tr.addEventListener("click", () => { if (!isBusy) { selectedIndex = i; render(); } });
         const gap = getGapAfter(i);
         const r = getRenderRange(track, i);
@@ -1712,7 +1721,7 @@
         const albumZeroText = loaded ? formatClockFromFrames(track.albumZeroFrame, sr, true) : "-";
         tr.innerHTML = `
           <td>${String(i + 1).padStart(2, "0")}</td>
-          <td class="file" title="${escapeHtml(track.fileName)}">${escapeHtml(track.fileName)}</td>
+          <td class="file" title="${escapeHtml(track.fileName)}">${escapeHtml(track.fileName)}${track.edgeModified ? `<span class="edge-badge">${escapeHtml(t("edgeEdited"))}</span>` : ""}</td>
           <td class="mono">${durationText}</td>
           <td class="mono">${soundStartText}</td>
           <td class="mono">${soundEndText}</td>
@@ -1780,7 +1789,7 @@
         const offsetText = (allTracksLoaded() && track) ? formatClockFromFrames(track.albumZeroFrame, sr, true) : "-";
         tr.innerHTML = `
           <td>${String(i + 1).padStart(2, "0")}</td>
-          <td class="file" title="${escapeHtml(item.fileName)}">${escapeHtml(item.fileName)}</td>
+          <td class="file" title="${escapeHtml(item.fileName)}">${escapeHtml(item.fileName || t("edgeUnassigned"))}</td>
           <td class="mono">${formatBytes(item.size)}</td>
           <td class="file" title="${escapeHtml(matched)}">${escapeHtml(matched)}</td>
           <td class="mono">${offsetText}</td>
@@ -2444,6 +2453,8 @@
       const hasDetailSelection = loaded && selectedIndex >= 0 && selectedIndex <= tracks.length && tracks.length > 0;
       const hasSrt = srtItems.length > 0;
       const hasSrtSelection = selectedSrtIndex >= 0 && selectedSrtIndex < srtItems.length;
+      $("openEdgeBtn").disabled = isBusy;
+      $("assignSrtBtn").disabled = isBusy || !hasSrtSelection;
       $("fileInput").disabled = isBusy;
       $("srtInput").disabled = isBusy;
       if ($("projectInput")) $("projectInput").disabled = isBusy;
@@ -2458,7 +2469,7 @@
       $("srtMoveDownBtn").disabled = isBusy || !hasSrtSelection || selectedSrtIndex >= srtItems.length - 1;
       $("srtDeleteBtn").disabled = isBusy || !hasSrtSelection;
       $("srtClearBtn").disabled = isBusy || !hasSrt;
-      $("exportSrtBtn").disabled = isBusy || !loaded || !hasSrt;
+      $("exportSrtBtn").disabled = isBusy || !loaded || !hasSrt || srtItems.length !== tracks.length || srtItems.some(x => !x.file);
       ["detectBtn", "resetSilenceBtn", "autoLayoutBtn", "exportWavBtn", "exportTimesheetBtn", "exportTracklistBtn", "exportProjectBtn", "exportOffsetBtn"].forEach(id => {
         $(id).disabled = isBusy || !loaded;
       });
@@ -3097,6 +3108,7 @@
       if (!allTracksLoaded()) throw new Error(t("loadFirst"));
       if (srtItems.length === 0) throw new Error(t("noSrtFiles"));
       if (srtItems.length !== tracks.length) throw new Error(t("srtCountMismatch"));
+      if (srtItems.some(item => !item.file)) throw new Error(t("edgeMissingSrt"));
       const sr = getSampleRate();
       const allCues = [];
       for (let i = 0; i < srtItems.length; i++) {
@@ -3119,25 +3131,12 @@
       downloadBlob(new Blob([out], { type: "text/plain;charset=utf-8" }), "album_subtitles.srt");
     }
 
-    function handleFileSelection() {
-      const files = sortFilesByName($("fileInput").files || []);
-      tracks = files.map(file => ({
-        file,
-        fileName: file.name,
-        loaded: false,
-        arrayBuffer: null,
-        bytes: null,
-        fmt: null,
-        dataOffset: 0,
-        dataSize: 0,
-        totalFrames: 0,
-        durationSec: 0,
-        detected: false,
-        peakEnvelope: null,
-        soundStartFrame: 0,
-        soundEndFrame: 0,
-        albumZeroFrame: 0
-      }));
+    function handleFileSelection(selectedFiles = null, handles = new Map()) {
+      const files = sortFilesByName(Array.isArray(selectedFiles) ? selectedFiles : ($("fileInput").files || []));
+      stopPreview();
+      detailWaveCache = null;
+      previewRange = null;
+      tracks = files.map(file => freshTrack(file, newTrackId(), false, handles.get(file)));
       if (pendingProject) applyProjectToSelectedFileList(pendingProject);
       selectedIndex = tracks.length ? 0 : -1;
       referenceFormat = null;
@@ -3168,6 +3167,9 @@ ${t("selectedFiles")}`, "ok");
         setStatus(t("noTracks"), "warn");
         return;
       }
+      stopPreview();
+      detailWaveCache = null;
+      previewRange = null;
       setBusy(true, t("loadingFile"), 0, tracks.length);
       try {
         const inputs = [];
@@ -3178,13 +3180,15 @@ ${t("selectedFiles")}`, "ok");
           await sleepFrame();
           const arrayBuffer = await item.file.arrayBuffer();
           if (isWavBuffer(arrayBuffer)) {
-            const parsed = parseWav(arrayBuffer, item.file.name);
-            parsed.file = item.file;
-            inputs.push({ kind: "wav", item, parsed, arrayBuffer, sourceInfo: { kind: "wav", sampleRate: parsed.fmt.sampleRate, numChannels: parsed.fmt.numChannels, fmt: parsed.fmt } });
-          } else if (isMp3File(item.file)) {
-            inputs.push({ kind: "mp3", item, arrayBuffer, sourceInfo: null });
+            try {
+              const parsed = parseWav(arrayBuffer, item.file.name);
+              parsed.file = item.file;
+              inputs.push({ kind: "wav", item, parsed, arrayBuffer, sourceInfo: { kind: "wav", sampleRate: parsed.fmt.sampleRate, numChannels: parsed.fmt.numChannels, fmt: parsed.fmt } });
+            } catch (_) {
+              inputs.push({ kind: "decoded", item, arrayBuffer, sourceInfo: null });
+            }
           } else {
-            throw new Error(`${t("unsupportedInput")} ${item.fileName}`);
+            inputs.push({ kind: "decoded", item, arrayBuffer, sourceInfo: null });
           }
           updateProgress(`${t("loadingFile")} ${String(i + 1).padStart(2, "0")}: ${item.fileName}`, i + 1, tracks.length);
           await sleepFrame();
@@ -3197,6 +3201,9 @@ ${t("selectedFiles")}`, "ok");
           processingMode = "standardWav";
           tracks = inputs.map(input => {
             input.parsed.peakEnvelope = computePeakEnvelope(input.parsed);
+            input.parsed.id = input.item.id;
+            input.parsed.edgeModified = input.item.edgeModified;
+            input.parsed.sourceHandle = input.item.sourceHandle;
             return input.parsed;
           });
           referenceFormat = { ...tracks[0].fmt };
@@ -3218,7 +3225,7 @@ ${t("selectedFiles")}`, "ok");
               } else {
                 const audioBuffer = await decodeWithBrowser(input.arrayBuffer, input.item.fileName, decodeContext);
                 const channels = audioBufferToFloatChannels(audioBuffer);
-                const sourceInfo = { kind: "mp3", sampleRate: audioBuffer.sampleRate, numChannels: audioBuffer.numberOfChannels, fmt: null };
+                const sourceInfo = { kind: "decoded", sampleRate: audioBuffer.sampleRate, numChannels: audioBuffer.numberOfChannels, fmt: null };
                 decodedSources.push({ input, channels, sampleRate: audioBuffer.sampleRate, numChannels: audioBuffer.numberOfChannels, sourceInfo });
               }
               updateProgress(`${t("loadingFile")} ${String(i + 1).padStart(2, "0")}: ${input.item.fileName}`, i + 1, inputs.length);
@@ -3228,6 +3235,9 @@ ${t("selectedFiles")}`, "ok");
             tracks = decodedSources.map(source => {
               const converted = resampleAndConvertChannels(source.channels, source.sampleRate, targetFmt.sampleRate, targetFmt.numChannels);
               const track = makeDecodedTrack({ fileName: source.input.item.fileName, file: source.input.item.file }, converted, targetFmt);
+              track.id = source.input.item.id;
+              track.edgeModified = source.input.item.edgeModified;
+              track.sourceHandle = source.input.item.sourceHandle;
               track.peakEnvelope = computePeakEnvelope(track);
               return track;
             });
@@ -3270,6 +3280,7 @@ ${t("selectedFiles")}`, "ok");
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      installEdgeIntegration();
       $("playPreviewBtn").addEventListener("click", () => { playPreviewRange().catch(e => setStatus(e.message, "err")); });
       $("stopPreviewBtn").addEventListener("click", stopPreview);
       $("overviewCanvas").addEventListener("click", handleOverviewClick);

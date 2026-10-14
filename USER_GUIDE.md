@@ -1,13 +1,20 @@
-# Album Clip Timeline Builder v1.0.2 User Guide
+# Album Clip Timeline Builder v1.1.0 User Guide
 
-Album Clip Timeline Builder は、複数の音声クリップ（WAV / MP3）をアルバム形式のタイムラインへ配置し、実音開始・実音終了を基準に曲間を整え、`album.wav`、`album_subtitles.srt`、`timesheet.txt`、`tracklist.txt`、`project.json`、`offset_image.txt` を出力するためのローカルHTMLアプリです。
+Album Clip Timeline Builder は、複数の音声クリップ（WAV、MP3など）をアルバム形式のタイムラインへ配置し、実音開始・実音終了を基準に曲間を整え、`album.wav`、`album_subtitles.srt`、`timesheet.txt`、`tracklist.txt`、`project.json`、`offset_image.txt` を出力するためのローカルHTMLアプリです。
 
 This tool is a local browser-based album timeline builder. It is designed for music-production and video-production workflows where several generated or edited tracks need to be assembled into one album-length audio file, with subtitle and timing helper files exported from the same timeline.
 
 ---
 
+## 起動と同梱ファイル
+
+ZIP全体を展開し、展開先の `index.html` をChromeまたはEdgeで開きます。`edge-fixer.js` と `edge-integration.js` は同じフォルダに置いてください。HTMLだけを移動すると統合機能が起動しません。インストール、サーバー、インターネット接続は不要です。英語マニュアルは [USER_GUIDE_EN.md](USER_GUIDE_EN.md) です。
+
+画面や本書の `project.json` は作業保存ファイルを指し、実際のダウンロード名は `album_project.json` です。アルバムWAVや各種テキストはブラウザのダウンロードで保存します。Edge Fixerの個別WAV保存には保存ダイアログを使います。
+
 ## 目次
 
+- [任意のEdge Fixerを使う](#任意のedge-fixerを使う--optional-edge-fixer)
 - [このツールでできること](#このツールでできること)
 - [このツールが向いている用途](#このツールが向いている用途)
 - [重要な設計思想](#重要な設計思想)
@@ -38,11 +45,48 @@ This tool is a local browser-based album timeline builder. It is designed for mu
 
 ---
 
+## 任意のEdge Fixerを使う / Optional Edge Fixer
+
+「先頭・末尾の確認・編集」は、音源を選ぶ前でも、配置後でも開けます。曲の追加・リストからの削除はできますが、並べ替えはTimeline Builderで行います。
+
+1. 音源を選び、波形上で編集範囲を選びます。末尾はクリックするとその位置から最後まで選択します。
+2. 「ノイズ確認」は微小音を試聴時だけ増幅します。保存音声には増幅を反映しません。
+3. 無音化・フェード・末尾削除・無音追加を行い、「WAVで保存」で保存先を指定します。元のWAVを指定すれば上書き、別の名前なら別ファイル保存です。MP3等の入力はWAVへ変換され、元ファイルは残ります。
+4. 「リストを引き継いで戻る」を押します。未保存編集があれば、保存する曲を開く／未保存分を破棄して戻る／編集を続ける、を選べます。破棄しても、すでに成功した保存は取り消しません。
+5. 保存やリスト変更があれば、Timeline Builderで「音声読み込み・自動配置」を実行してください。曲間などの設定値と曲順は維持しますが、解析結果と手動配置・境界調整はリセットします。
+
+修正保存した曲は緑色と「修正済み」で表示します。無編集で追加しただけの曲や、形式変換だけの曲には修正済みの印を付けません。印は同じリストの間は保持し、新たな音源リストを選び直すと解除します。project.jsonへは印を保存しません。
+
+追加曲はファイル名の自然順で処理し、既存リストを上から見て自分より名前順で後になる最初の曲の直前へ挿入します。該当がなければ末尾です。既存曲同士の順序は変更しません。追加曲を削除してから戻った場合など、最終リストが元と同じで保存もなければ配置を保持します。
+
+SRTがすでに割り当てられている場合、既存曲の対応を維持します。追加曲は「未割当」と表示し、その行を選択して「選択行にSRTを割当」で指定できます。未割当がある間はSRT結合を無効にします。削除した曲に対応するSRTはリストから外しますが、ディスク上のファイルは消しません。
+
+### 音声形式と保存
+
+- Chrome / Edgeの「ファイル選択」「音源を追加」では、曲ごとの保存場所情報も保持します。「WAVで保存」はその曲があるフォルダを開始位置に指定します。別の場所へ保存した後は、その新しい場所を使用します。入力フォルダ自体を指定する操作は不要です。
+- ドロップでもブラウザが場所情報を渡す場合は保持します。場所情報がない入力では直前に保存に成功した場所を使用し、それもなければブラウザが記憶した保存場所に従います。OSやブラウザの制限で開始位置が採用されない場合があります。
+- この更新以前に読み込んだ曲の場所情報は後から取得できません。ページを更新して、音源を「ファイル選択」または「音源を追加」から読み込み直してください。
+
+**Save location:** On supported Chrome/Edge versions, the audio picker retains each file handle. WAV save dialogs start in that file's directory, or its new directory after saving elsewhere. When an input has no location handle, the last successful save location is used, with browser picker history as a fallback. Reload and reselect files first if they were loaded by an older version. No directory selection is required.
+
+- 対応WAVはPCM 8/16/24/32bit、Float32/64bit、最大8chです。未編集部分のサンプルバイト、サンプルレート、ビット深度、チャンネル数を保持します。
+- RF64、圧縮WAV、複数dataチャンク、格納ビット数と有効ビット数が異なるWAVなどはEdge Fixerの無劣化編集対象外です。ブラウザ変換へ黙って切り替えず、エラー表示します。
+- その他の音声形式の読込可否はブラウザ依存です。ブラウザのAudioContextでデコードし、その結果のサンプルレートで24bit PCM WAVとして保存します。元レートから変換される場合があります。元の圧縮による損失が復元されるわけではありません。
+- WAV以外からの変換では音声のみを保存し、タグやジャケットを引き継ぎません。
+- 保存ダイアログが使えない環境では保存ボタンを無効にします。通常ダウンロードへの自動切替はしません。Timeline Builder単体の読み込み・結合は利用できます。
+- 保存のキャンセル・失敗では音源を差し替えず、未保存編集を保持します。保存完了後に読み戻し、読み戻しだけが失敗した場合は実際に書き込んだ同一WAVデータを保持します。
+- すべての音声処理はブラウザのメモリを使います。長尺・多数の曲では端末のメモリ容量に依存します。
+
+**English:** Open **Check / edit head & tail**, add/select audio, edit, and use **Save as WAV**. Saving keeps tracks in the list. **Return with this list** replaces saved sources and applies additions/removals. Any successful save or net list change resets analysis and arrangement; an unchanged visit preserves them. Existing order and SRT associations are retained; new tracks receive empty SRT slots. Edited tracks have a green badge. Supported WAVs preserve untouched bytes and format; other browser-decodable audio becomes 24bit PCM WAV at the browser's decoded sample rate. Saving requires desktop Chrome/Edge save dialogs. Cancellation/failure retains edits. The standalone Edge Fixer is independent.
+
+---
+
 ## このツールでできること
 
 Album Clip Timeline Builder では、次の作業ができます。
 
-- 複数のWAV / MP3ファイルを選択する
+- 複数の音源ファイルを選択する（WAV、MP3、その他ブラウザが対応する音声形式）
+- 任意のEdge Fixerで先頭・末尾を確認・編集し、個別のWAVファイルとして保存する
 - ファイル名昇順で曲リストを作成する
 - 曲順を手動で入れ替える
 - 音声ファイルを読み込み、各曲の実音開始・実音終了を検出する
@@ -76,7 +120,7 @@ Album Clip Timeline Builder では、次の作業ができます。
 - 動画編集ソフトで曲ごとに画像を差し替えるためのタイムシートを作る
 - 一部の音源だけ差し替えながら、同じ曲順・曲間・SRT対応を再利用する
 
-このツールはDAWではありません。フェード、クロスフェード、音量補正、ミキシング、マスタリングを目的としたものではありません。目的は、複数の音声クリップを「どこに置くか」「実音区間をどこからどこまでとみなすか」を整理し、そこから音声・字幕・タイミング補助ファイルを一括して出力することです。
+Timeline Builderの結合処理はクロスフェード、音量補正、ミキシング、マスタリングを行いません。必要な先頭・末尾のフェードや無音化は、任意のEdge Fixerで個別音源へ適用できます。目的は、複数の音声クリップを「どこに置くか」「実音区間をどこからどこまでとみなすか」を整理し、そこから音声・字幕・タイミング補助ファイルを一括して出力することです。
 
 ---
 
@@ -104,7 +148,7 @@ Album Clip Timeline Builder では、各曲について次の3つを分けて扱
 
 このツールはローカルHTMLアプリです。`index.html` をブラウザで開き、ユーザーが選択した音声ファイルやSRTファイルをブラウザ内で処理します。
 
-このアプリ自体は、音声ファイル、字幕ファイル、生成したWAV、project.jsonをサーバーへアップロードしません。GitHub Pagesで公開した場合でも、配信されるのはHTMLとドキュメントだけです。ユーザーが選択したローカルファイルは、ユーザーのブラウザ内で処理されます。
+このアプリ自体は、音声ファイル、字幕ファイル、生成したWAV、project.jsonをサーバーへアップロードしません。GitHub Pagesで公開した場合でも、配信されるのはHTML、JavaScript、ドキュメントだけです。ユーザーが選択したローカルファイルは、ユーザーのブラウザ内で処理されます。
 
 ただし、ブラウザのセキュリティ仕様により、project.jsonに記録されたファイル名やパスから元ファイルを自動で再取得することはできません。プロジェクトを再開するときは、ユーザーが音声ファイルやSRTファイルを再選択する必要があります。
 
@@ -114,7 +158,7 @@ Album Clip Timeline Builder では、各曲について次の3つを分けて扱
 
 推奨環境は、Windows上の最新の Google Chrome または Microsoft Edge です。
 
-このツールは、File API、Web Audio API、Canvas、Blobダウンロードなどのブラウザ機能に依存します。WAV入力の一部はアプリ内パーサーで処理します。MP3入力はブラウザの音声デコード機能に依存します。
+このツールは、File API、Web Audio API、Canvas、Blobダウンロードなどのブラウザ機能に依存します。WAV入力の一部はアプリ内パーサーで処理します。MP3などの入力はブラウザの音声デコード機能に依存します。Edge Fixerの保存には保存ダイアログAPIが必要です。非対応環境では保存ボタンが無効になり、通常のTimeline Builderは引き続き利用できます。
 
 FirefoxやSafariでも一部機能は動作する可能性がありますが、リリース想定はChrome / Edgeです。特にMP3デコード結果やAudioContextのサンプルレートはブラウザ実装の影響を受けることがあります。
 
@@ -124,13 +168,14 @@ FirefoxやSafariでも一部機能は動作する可能性がありますが、�
 
 ### 入力音声
 
-- WAV
-  - PCM 16-bit
-  - PCM 24-bit
-  - PCM 32-bit
-  - IEEE Float 32-bit
-- MP3
-  - ブラウザのデコード機能に依存します
+| 機能 | 対応する音源 |
+|---|---|
+| Timeline Builderの標準WAVモード | PCM 16/24/32bit、IEEE Float32の同一形式WAV |
+| Timeline Builderのデコードモード | MP3、FLAC、M4A、AAC、Ogg等、ブラウザがデコードできる形式。WAV形式混在時も使用 |
+| Edge FixerのWAV編集 | PCM 8/16/24/32bit、Float32/64bit、最大8ch。未編集部分の音声バイトと形式を保持 |
+| Edge Fixerのその他入力 | ブラウザでデコードできる音声。出力は24bit PCM WAV |
+
+拡張子が一覧にあっても、そのファイルのコーデックをブラウザがデコードできなければ読み込めません。Edge Fixerの未対応WAVは、無劣化を保証するため自動変換せずエラーにします。
 
 ### 入力字幕
 
@@ -140,6 +185,7 @@ FirefoxやSafariでも一部機能は動作する可能性がありますが、�
 
 ### 出力
 
+- 個別の編集済みWAV（Edge Fixerの保存ダイアログ）
 - `album.wav`
 - `album_subtitles.srt`
 - `timesheet.txt`
@@ -155,7 +201,7 @@ Album Clip Timeline Builder には、内部的に2つの処理モードがあり
 
 ### 標準WAVモード
 
-全ファイルがWAVで、かつサンプルレート、チャンネル数、ビット深度、WAV形式が完全に一致している場合は、標準WAVモードになります。
+全ファイルがTimeline Builderの標準WAV処理に対応し、サンプルレート、チャンネル数、ビット深度、WAV形式が完全に一致する場合に、標準WAVモードになります。
 
 このモードでは、できるだけ無加工に近い形で、元WAVの必要範囲を切り貼りします。音声サンプル自体のゲイン処理、フェード、クロスフェード、サンプルレート変換は行いません。
 
@@ -168,7 +214,7 @@ Album Clip Timeline Builder には、内部的に2つの処理モードがあり
 
 ### デコードモード
 
-MP3が含まれる場合、またはWAV同士の形式が一致しない場合は、デコードモードになります。
+MP3等のブラウザデコード音源が含まれる場合、WAV同士の形式が一致しない場合、または標準WAV処理の対象外でブラウザがデコード可能なWAVの場合は、デコードモードになります。
 
 このモードでは、すべての入力音声を内部的にFloat音声として扱い、必要に応じてサンプルレートとチャンネル数を揃えてからWAVとして書き出します。
 
@@ -176,11 +222,11 @@ MP3が含まれる場合、またはWAV同士の形式が一致しない場合�
 
 - サンプルレートは、デコード後の入力群の最大値に合わせます
 - チャンネル数は、デコード後の入力群の最大値に合わせます
-- WAV入力が含まれる場合、WAV入力群の最上位ビット深度を反映します
-- 32-bit float WAVが含まれる場合は、32-bit float WAV出力になります
-- MP3のみの場合は、16-bit PCM WAV出力になります
+- アプリ内パーサーで読み込めたWAVのうち、最上位のビット深度を反映します
+- その中に32-bit float WAVが含まれる場合は、32-bit float WAV出力になります
+- ブラウザデコード音源のみの場合（MP3のみ等）は、従来どおり16-bit PCM WAV出力です
 
-MP3にはWAVのようなPCMビット深度がありません。そのため、MP3だけを読み込んだ場合は、実用上扱いやすい16-bit PCM WAVとして出力します。
+Edge FixerでMP3等を個別保存する場合の24bit WAVと、Timeline Builderへ直接読み込んでアルバム化する場合の既定16bit WAVは、別の出力設定です。Edge Fixerで保存した24bit WAVをリストへ戻せば、そのWAV形式がアルバム出力の形式判定に使われます。
 
 ### デコードモードの注意点
 
@@ -279,12 +325,19 @@ project.jsonには、音声ファイル本体やSRTファイル本体は含ま�
 
 ## 基本ワークフロー
 
+### Edge Fixerから始める
+
+1. `index.html` を開き、曲が空のまま「先頭・末尾の確認・編集」を押します。
+2. 「音源を追加」で曲を選び、必要な曲だけ編集して「WAVで保存」します。
+3. 「リストを引き継いで戻る」を押します。未編集曲も元形式のままリストへ戻ります。
+4. Timeline Builderで曲順を調整し、「音声読み込み・自動配置」へ進みます。
+
 ### 新規にアルバムWAVを作る
 
 1. `index.html` をブラウザで開きます。
-2. `ファイル選択` から、まとめたいWAV / MP3ファイルを選択します。
+2. `ファイル選択` から、まとめたい音源ファイルを選択します。
 3. 曲リストにファイル名昇順で並びます。
-4. 必要に応じて `上へ` / `下へ` で曲順を調整します。
+4. 必要なら「先頭・末尾の確認・編集」で音源を処理して戻り、`上へ` / `下へ` で曲順を調整します。
 5. `無音判定閾値` と `検出ブロック` を必要に応じて設定します。
 6. `標準曲間` を設定します。
 7. `音声読み込み・自動配置` を押します。
@@ -374,7 +427,7 @@ project.jsonには、音声ファイル本体やSRTファイル本体は含ま�
 
 ### ファイル選択
 
-WAV / MP3ファイルを複数選択します。選択直後は、ファイル名昇順で曲リストに並びます。
+音源ファイルを複数選択します。選択直後は、ファイル名の数字を考慮した昇順で曲リストに並びます。ここで選び直すと現在の音源リストを置き換えます。既存リストへ追加する場合はEdge Fixerの「音源を追加」を使ってください。
 
 この段階では、まだ音声データ本体は完全には読み込まれていません。曲順の調整、削除、全クリアは可能です。
 
@@ -564,7 +617,7 @@ SRT合成では、曲ごとのSRTファイルを、アルバム全体のタイ�
 - 字幕番号は1から振り直す
 - `album_subtitles.srt` として出力する
 
-曲数とSRTファイル数が一致しない場合は出力できません。
+曲数とSRTファイル数が一致しない場合、または未割当のSRT枠がある場合は出力できません。Edge Fixerから曲を追加して戻った後の未割当行は、「選択行にSRTを割当」で指定できます。
 
 SRT合成は、音源ごとのSRTが「その音源ファイルの00:00」を基準に作られていることを前提にしています。音源ファイルの途中から字幕を作った場合や、別編集後の音源に対するSRTを使う場合は、タイミングが合わない可能性があります。
 
@@ -647,7 +700,7 @@ project.jsonには、曲順、ファイル名、実音開始・実音終了、�
 
 ### 保存されないもの
 
-音声ファイル本体とSRTファイル本体は保存されません。
+音声ファイル本体、SRT本文、Edge Fixerの未保存編集、「修正済み」の印、ファイルの場所情報は保存されません。
 
 これはブラウザアプリの制約であり、設計上の仕様です。project.jsonは、元ファイルを指し示す作業メモであり、元ファイルを埋め込んだパッケージではありません。
 
@@ -735,11 +788,9 @@ MP3はブラウザでデコードされます。MP3にはエンコーダ遅延�
 
 一般的なアルバムWAV作成や動画用BGMでは問題になりにくいですが、既存SRTや映像と厳密に合わせる場合は、WAV素材を使う方が安全です。
 
-### 6. フェードアウト処理はしない
+### 6. フェードはEdge Fixerで処理する
 
-このアプリはフェードアウトを追加しません。実音終了以降をゼロにするだけです。
-
-フェードアウトを作りたい場合は、事前にDAWや別ツールで音源自体を処理してから、このアプリへ読み込んでください。
+Timeline Builderの結合処理は実音範囲外をゼロにし、自動フェードは追加しません。フェードアウトが必要なら「先頭・末尾の確認・編集」を開き、末尾の範囲を選択して「選択範囲をフェードアウト」を実行し、WAV保存して戻ります。
 
 ### 7. クリックノイズ除去には末尾編集が使える
 
@@ -787,11 +838,11 @@ Sunoなどの生成音源では、曲末尾に小さなクリックノイズや�
 
 - 出力はWAVのみです。
 - MP3出力は行いません。
-- フェード、音量補正、クロスフェード、マスタリング処理は行いません。
+- 結合時の自動フェード、音量補正、クロスフェード、マスタリングは行いません。個別の先頭・末尾フェードはEdge Fixerで処理します。
 - 実音区間同士の重なりを含むWAV出力はできません。
-- 標準WAVモードは、全WAVが同一形式の場合のみ使われます。
-- MP3入力や形式混在入力では、デコードモードになります。
-- MP3デコードはブラウザ実装に依存します。
+- 標準WAVモードは、対応するWAVが全曲同一形式の場合のみ使われます。
+- MP3等の入力や形式混在入力では、デコードモードになります。
+- MP3等の音声デコードはブラウザ実装に依存します。
 - デコードモードのサンプルレートは、ブラウザでデコードされた後の値を基準にします。
 - デコードモードのサンプルレート変換は簡易的な線形補間です。
 - 16bit / 24bit / 32bit PCMへ書き出す際、ディザは行いません。
@@ -803,7 +854,7 @@ Sunoなどの生成音源では、曲末尾に小さなクリックノイズや�
 
 ## GitHub Pagesでの公開
 
-GitHub Pagesで公開する場合は、リポジトリ直下に `index.html`、`README.md`、`USER_GUIDE.md`、`CHANGELOG.md`、`RELEASE_REVIEW.md`、`LICENSE` を置きます。
+GitHub Pagesで公開する場合は、リポジトリ直下にパッケージ内のファイル一式を置きます。特に `index.html`、`edge-fixer.js`、`edge-integration.js` を同じ階層に保ってください。ドキュメントは `README.md`、`USER_GUIDE.md`、`USER_GUIDE_EN.md`、`CHANGELOG.md`、`RELEASE_REVIEW.md`、`LICENSE` です。
 
 GitHub Pagesを有効化すると、ブラウザ上でそのままアプリを開けます。
 
