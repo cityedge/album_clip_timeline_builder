@@ -236,10 +236,20 @@ window.EdgeFixer = {
     flex-wrap: wrap;
   }
   .selection-info {
+    /* Reserve the same slot for empty, point and range states. Flex wrapping is
+       independent per panel, so Head can stay on one row while Tail uses two. */
+    flex: 0 0 27em;
+    max-width: 100%;
+    min-height: 1.5em;
+    line-height: 1.5;
     margin-left: auto;
     color: var(--muted);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .hint {
     color: var(--muted);
@@ -307,7 +317,8 @@ window.EdgeFixer = {
  #unsavedNames { white-space:pre-line; max-height:30vh; overflow:auto; }
  .topbar { flex-wrap:wrap; } .meta { white-space:normal; }
  .brand { flex-wrap:wrap; } .brand .version { white-space:normal; }
- @media(max-width:760px) { #app { grid-template-columns:180px minmax(0,1fr); } .panel-head {flex-wrap:wrap;} .hint {display:none;} }
+ @media(min-width:601px) and (max-width:760px) { #app { grid-template-columns:180px minmax(0,1fr); } }
+ @media(max-width:760px) { .panel-head {flex-wrap:wrap;} .hint {display:none;} }
  </style>
 </head>
 <body>
@@ -363,7 +374,7 @@ window.EdgeFixer = {
       <section class="panel">
         <div class="panel-head">
           <div class="panel-title" data-i18n="tail">末尾</div>
-          <div class="hint" data-i18n="tailWaveHint">クリックで末尾まで選択／ホイールで拡大・縮小</div>
+          <div class="hint" data-i18n="tailWaveHint">クリックで位置選択／ドラッグで範囲選択／ホイールで拡大・縮小</div>
           <div class="spacer"></div>
           <label class="gain-wrap">
             <span data-i18n="displayGain">表示ゲイン</span>
@@ -411,16 +422,16 @@ window.EdgeFixer = {
       noFile: 'WAVを追加してください', undo: '元に戻す',
       saveRemove: '保存してリストから削除', head: '先頭', tail: '末尾',
       wheelHint: 'ホイールで時間軸を拡大・縮小',
-      tailWaveHint: 'クリックで末尾まで選択／ホイールで拡大・縮小', displayGain: '表示ゲイン',
+      tailWaveHint: 'クリックで位置選択／ドラッグで範囲選択／ホイールで拡大・縮小', displayGain: '表示ゲイン',
       playSelection: '選択範囲を再生', playingSelection: '■ 再生中（停止）',
       silenceSelection: '選択範囲を無音',
       fadeInSelection: '選択範囲をフェードイン',
       fadeOutSelection: '選択範囲をフェードアウト',
       trimAfterSelection: '選択開始位置から末尾を削除',
-      trimHint: '末尾波形をクリック、またはドラッグして位置を指定すると、その位置以降を削除します。',
+      trimHint: 'クリックした位置、またはドラッグした選択範囲の開始位置から末尾までを削除します。',
       silenceToAdd: '追加する無音', appendSilence: '末尾に無音を追加',
       badAppendValue: '追加時間は1～30000 msで指定してください。',
-      badTrimValue: '削除位置は曲の先頭より後を指定してください。',
+      badTrimValue: '削除位置は曲の先頭と末尾の間を指定してください。',
       dropHere: 'WAVファイルをドロップ',
       empty: 'ここにWAVファイルを複数ドロップできます。\n保存した曲は自動的にリストから消えます。',
       files: '曲', loading: '読み込み中…', unsupported: '未対応のWAV形式です。',
@@ -428,7 +439,7 @@ window.EdgeFixer = {
       noSelection: '先に波形上で範囲を選択してください。',
       nothingUndo: '元に戻せる編集がありません。',
       added: 'WAVを追加しました', onlyWav: 'WAVファイルだけを追加できます。',
-      select: '選択', dur: '長さ'
+      select: '選択', position: '位置', dur: '長さ'
     },
     en: {
       noisePreview: 'Check noise', noisePlaying: '■ Checking noise (stop)',
@@ -440,16 +451,16 @@ window.EdgeFixer = {
       noFile: 'Add WAV files', undo: 'Undo',
       saveRemove: 'Save & remove from list', head: 'Head', tail: 'Tail',
       wheelHint: 'Mouse wheel: horizontal zoom',
-      tailWaveHint: 'Click: select to end / Wheel: zoom', displayGain: 'Display gain',
+      tailWaveHint: 'Click: position / Drag: select range / Wheel: zoom', displayGain: 'Display gain',
       playSelection: 'Play selection', playingSelection: '■ Playing (stop)',
       silenceSelection: 'Silence selection',
       fadeInSelection: 'Fade in selection',
       fadeOutSelection: 'Fade out selection',
       trimAfterSelection: 'Trim from selection start',
-      trimHint: 'Click or drag in the tail waveform to choose the point to trim from.',
+      trimHint: 'Trim to the file end from the clicked position or the start of a dragged selection.',
       silenceToAdd: 'Silence to add', appendSilence: 'Append silence',
       badAppendValue: 'Enter 1–30000 ms of silence.',
-      badTrimValue: 'Choose a trim position after the start of the track.',
+      badTrimValue: 'Choose a trim position between the start and end of the track.',
       dropHere: 'Drop WAV files here',
       empty: 'Drop multiple WAV files here.\nSaved tracks disappear from the list automatically.',
       files: 'files', loading: 'Loading…', unsupported: 'Unsupported WAV format.',
@@ -457,7 +468,7 @@ window.EdgeFixer = {
       noSelection: 'Select a range on the waveform first.',
       nothingUndo: 'Nothing to undo.',
       added: 'WAV files added', onlyWav: 'Only WAV files can be added.',
-      select: 'Selection', dur: 'Length'
+      select: 'Selection', position: 'Position', dur: 'Length'
     }
   };
 
@@ -1137,6 +1148,11 @@ window.EdgeFixer = {
         ctx.strokeStyle = 'rgba(125, 211, 252, .9)';
         ctx.beginPath(); ctx.moveTo(x1 + .5, 0); ctx.lineTo(x1 + .5, height); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(x2 + .5, 0); ctx.lineTo(x2 + .5, height); ctx.stroke();
+      } else if (kind === 'tail' && v.selection.start === v.selection.end) {
+        // Zero-width selection marks only the cut position, never a filled range.
+        const x = plot.left + ((a - start) / (end - start)) * plot.width;
+        ctx.strokeStyle = 'rgba(125, 211, 252, .9)';
+        ctx.beginPath(); ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, height); ctx.stroke();
       }
     }
 
@@ -1157,20 +1173,32 @@ window.EdgeFixer = {
     if (!sel) return null;
     const a = Math.max(0, Math.min(current.info.duration, Math.min(sel.start, sel.end)));
     const b = Math.max(0, Math.min(current.info.duration, Math.max(sel.start, sel.end)));
+    // Do not round a single click into a one-sample editable range.
+    if (b <= a) return null;
     let startFrame = Math.max(0, Math.min(current.info.frameCount, Math.floor(a * current.info.sampleRate)));
     let endFrame = Math.max(startFrame, Math.min(current.info.frameCount, Math.ceil(b * current.info.sampleRate)));
     if (endFrame - startFrame < 1) return null;
     return { startFrame, endFrame, startSec: startFrame / current.info.sampleRate, endSec: endFrame / current.info.sampleRate };
   }
 
+  function selectionStartFrame(kind) {
+    const sel = views[kind].selection;
+    if (!current || !sel) return null;
+    return Math.max(0, Math.min(current.info.frameCount,
+      Math.floor(Math.min(sel.start, sel.end) * current.info.sampleRate)));
+  }
+
   function updateSelectionUI(kind) {
     const range = selectionToFrames(kind);
     const el = kind === 'head' ? $('headSelectionInfo') : $('tailSelectionInfo');
     if (!range) {
-      el.textContent = '';
+      const position = kind === 'tail' ? selectionStartFrame(kind) : null;
+      el.textContent = position === null ? '' : `${t('position')}: ${formatTime(position / current.info.sampleRate)}`;
+      el.title = el.textContent;
       return;
     }
     el.textContent = `${t('select')}: ${formatTime(range.startSec)} – ${formatTime(range.endSec)} · ${formatShort(range.endSec - range.startSec)}`;
+    el.title = el.textContent;
   }
 
   function updateControls() {
@@ -1188,7 +1216,8 @@ window.EdgeFixer = {
     $('tailPlayBtn').disabled = !ts || isSaving;
     $('tailMuteBtn').disabled = !ts || isSaving;
     $('tailFadeBtn').disabled = !ts || isSaving;
-    $('tailTrimBtn').disabled = !ts || isSaving || selectionToFrames('tail').startFrame < 1;
+    const trimFrame = selectionStartFrame('tail');
+    $('tailTrimBtn').disabled = isSaving || trimFrame === null || trimFrame < 1 || trimFrame >= current.info.frameCount;
     $('tailAppendBtn').disabled = !hasCurrent || isSaving;
     $('saveBtn').disabled = !hasCurrent || isSaving || !canSave;
     $('returnBtn').disabled = isSaving;
@@ -1254,11 +1283,8 @@ window.EdgeFixer = {
       if (ev.pointerId !== dragPointerId) return;
       cancelDrag();
       const sel = views[kind].selection;
-      if (current && sel && Math.abs(sel.end - sel.start) < 0.0005) {
-        // A single click on Tail chooses a precise cut / fade-to-end point.
-        views[kind].selection = kind === 'tail'
-          ? { start: anchor, end: current.info.duration }
-          : null;
+      if (sel && sel.end === sel.start && kind === 'head') {
+        views[kind].selection = null;
       }
       drawWave(kind);
       updateControls();
@@ -1312,10 +1338,10 @@ window.EdgeFixer = {
 
   function trimTail() {
     if (!current || isSaving) return;
-    const r = selectionToFrames('tail');
-    if (!r) return showStatus(t('noSelection'), true);
-    if (r.startFrame < 1) return showStatus(t('badTrimValue'), true);
-    commitOperation({ type: 'trim', startFrame: r.startFrame });
+    const startFrame = selectionStartFrame('tail');
+    if (startFrame === null) return showStatus(t('noSelection'), true);
+    if (startFrame < 1 || startFrame >= current.info.frameCount) return showStatus(t('badTrimValue'), true);
+    commitOperation({ type: 'trim', startFrame });
   }
 
   function appendTailSilence() {

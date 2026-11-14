@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.1.2 — 2026-11-14
+
+- Matched the standalone Edge Fixer's Tail click behavior: zero-width position selection for tail trimming only. Head clicks clear selection, and dragging selects a range in both panels. Playback, noise checking, silence and fade require a nonzero range.
+- Reserved a fixed selection-information area in each panel. Head and Tail wrap independently; empty, position and range states keep waveform height stable. Full information remains available on hover if abbreviated.
+- Corrected the integrated editor's narrow-screen column override so controls remain visible in the stacked mobile layout.
+- Updated Japanese/English guides and regression checks for selection, responsive layout, and trimmed WAV handoff back to Timeline Builder.
+
 ## v1.1.1 — 2026-11-14
 
 - Fixed waveform selection continuing on hover after pointer capture or window focus was lost. Selection now also checks the pressed mouse button and active pointer.

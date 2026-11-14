@@ -1,4 +1,23 @@
-# Release Review: Album Clip Timeline Builder v1.1.1
+# Release Review: Album Clip Timeline Builder v1.1.2
+
+## Scope — 2026-11-14
+
+This release changes the integrated Edge Fixer's Tail click to a zero-width position selection for tail trimming. Head clicks still clear selection; range playback, noise preview, silence and fade require dragging. Position and range trimming both retain the saved-WAV handoff to Timeline Builder.
+
+Each editor panel reserves a fixed-width information slot and wraps its own controls independently. At the same viewport, Head can use one row while Tail uses two; selection text does not change waveform height. The narrow-screen column override also respects the stacked mobile layout.
+
+The Japanese/English manuals explain the change from click-to-end selection. Browser title, visible version and exported project version are 1.1.2; project schema remains 2. Standalone Suno WAV Edge Fixer is released separately as 0.3.3.
+
+## Validation and packaging
+
+- Pre-package regression checks passed in Windows Chrome 157.0.8103.50: 29 interaction/handoff cases, WAV core checks, and native-save-location simulations. Trimmed WAV sample bytes, edited badges, arrangement reset after saving, unchanged-visit preservation and Timeline reload were checked. Native save dialogs are mocked; the test does not navigate the OS dialog.
+- Layout checks passed in Japanese and English at widths 500, 760, 1280, 1520 and 1920 pixels. Empty, position, range and long-timestamp labels retained the same waveform/footer dimensions. Controls remained visible without horizontal overflow. At 1520 pixels Head used one row and Tail two; at 1920 both used one.
+- The nine-file package includes the HTML, two companion JavaScript files, Japanese/English guides, README, changelog, this review and MIT license. Packaging verifies extracted files against source hashes and produces a SHA-256 sidecar. Generated test audio and development tools are excluded.
+- The extracted package can be checked with ALBUM_APP_DIR pointing to its folder using tests/edge_pointer.cjs, tests/edge_layout.cjs and tests/save_locations.cjs. The release identity check also verifies project version, text encoding and local documentation links.
+
+---
+
+# Historical release review: v1.1.1
 
 ## Scope — 2026-11-14
 

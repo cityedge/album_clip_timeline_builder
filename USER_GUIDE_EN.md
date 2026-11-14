@@ -1,4 +1,4 @@
-# Album Clip Timeline Builder v1.1.1 User Guide
+# Album Clip Timeline Builder v1.1.2 User Guide
 
 Arrange individual songs into an album-length WAV, with optional subtitle and timing exports. The integrated Edge Fixer lets you inspect and edit each song's beginning and ending before assembling the album.
 
@@ -25,7 +25,11 @@ You can also open Edge Fixer with an empty list, add and edit songs there, then 
 
 ### Inspect and edit
 
-Choose a song in the editor's list. Select a region in the head waveform, or click the tail waveform to select from that point to the end. Use the mouse wheel to zoom the time axis. Display gain changes waveform visibility only.
+Earlier releases selected through the file end when Tail was clicked. This release uses a **zero-width position selection** instead. To play, silence or fade through the end, drag from the intended start to the right edge of the waveform.
+
+Choose a song in the editor's list. Drag over Head or Tail to select a range. A click on Head clears selection. A click on Tail selects only that position with zero width, shown as a vertical line and a Position time. This position is used only for trimming through the file end; playback, noise checking, silence and fade require a dragged range. Trimming a dragged range uses its left edge. Use the mouse wheel to zoom the time axis. Display gain changes waveform visibility only.
+
+The panels wrap their controls independently according to available width and button count, so Head may fit on one row while Tail uses two. Selection-information space is reserved even when empty: switching between empty, position and range states does not change waveform height. Hover over an abbreviated label to read the full text.
 
 - **Check noise** amplifies quiet content for audition only. It uses a fixed boost setting with signal-dependent gain limits. It does not change saved audio. Start with a comfortable device listening level; the browser cannot control the physical output level of your headphones or speakers.
 - Normal selection playback lets you hear the region without the noise-check boost.
@@ -109,7 +113,7 @@ For ordinary manual list reordering, check and adjust SRT order as well. The spe
 
 ## Save and resume a project
 
-Export the project after adjusting the timeline. It records filenames, song order, sound boundaries, source positions, detection/gap settings, processing/output information, and subtitle correspondence. Version 1.1.1 continues to use project schema 2.
+Export the project after adjusting the timeline. It records filenames, song order, sound boundaries, source positions, detection/gap settings, processing/output information, and subtitle correspondence. Version 1.1.2 continues to use project schema 2.
 
 The JSON does not embed audio or SRT contents. It also does not retain unsaved Edge Fixer edits, edited badges, or native file-location handles. Keep your saved audio and subtitle files separately.
 
