@@ -1216,13 +1216,20 @@ window.EdgeFixer = {
 
   function bindWaveInteractions(kind) {
     const canvas = views[kind].canvas;
-    let dragging = false;
+    let dragPointerId = null;
     let anchor = 0;
 
+    function cancelDrag() {
+      if (dragPointerId === null) return;
+      const pointerId = dragPointerId;
+      dragPointerId = null;
+      try { canvas.releasePointerCapture(pointerId); } catch (_) {}
+    }
+
     canvas.addEventListener('pointerdown', ev => {
-      if (!current || isSaving) return;
+      if (!current || isSaving || ev.button !== 0 || dragPointerId !== null) return;
       stopPlayback();
-      dragging = true;
+      dragPointerId = ev.pointerId;
       anchor = canvasTimeFromEvent(kind, ev);
       views[kind].selection = { start: anchor, end: anchor };
       canvas.setPointerCapture(ev.pointerId);
@@ -1231,18 +1238,23 @@ window.EdgeFixer = {
     });
 
     canvas.addEventListener('pointermove', ev => {
-      if (!dragging || !current) return;
+      if (ev.pointerId !== dragPointerId) return;
+      // A release outside the window can arrive without pointerup on this canvas.
+      // Hover must never extend a selection, even if capture/blur events were lost.
+      if (!(ev.buttons & 1) || !current || isSaving || !views[kind].selection) {
+        cancelDrag();
+        return;
+      }
       views[kind].selection.end = canvasTimeFromEvent(kind, ev);
       drawWave(kind);
       updateControls();
     });
 
     const finish = ev => {
-      if (!dragging) return;
-      dragging = false;
-      try { canvas.releasePointerCapture(ev.pointerId); } catch (_) {}
+      if (ev.pointerId !== dragPointerId) return;
+      cancelDrag();
       const sel = views[kind].selection;
-      if (sel && Math.abs(sel.end - sel.start) < 0.0005) {
+      if (current && sel && Math.abs(sel.end - sel.start) < 0.0005) {
         // A single click on Tail chooses a precise cut / fade-to-end point.
         views[kind].selection = kind === 'tail'
           ? { start: anchor, end: current.info.duration }
@@ -1252,11 +1264,18 @@ window.EdgeFixer = {
       updateControls();
     };
     canvas.addEventListener('pointerup', finish);
-    canvas.addEventListener('pointercancel', finish);
+    window.addEventListener('pointerup', finish);
+    for (const type of ['pointercancel', 'lostpointercapture']) {
+      canvas.addEventListener(type, ev => {
+        if (ev.pointerId === dragPointerId) cancelDrag();
+      });
+    }
+    window.addEventListener('blur', cancelDrag);
 
     canvas.addEventListener('wheel', ev => {
       if (!current) return;
       ev.preventDefault();
+      cancelDrag();
       stopPlayback();
       const v = views[kind];
       const factor = ev.deltaY < 0 ? 0.8 : 1.25;

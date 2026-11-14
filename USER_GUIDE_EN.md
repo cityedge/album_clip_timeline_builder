@@ -1,4 +1,4 @@
-# Album Clip Timeline Builder v1.1.0 User Guide
+# Album Clip Timeline Builder v1.1.1 User Guide
 
 Arrange individual songs into an album-length WAV, with optional subtitle and timing exports. The integrated Edge Fixer lets you inspect and edit each song's beginning and ending before assembling the album.
 
@@ -34,6 +34,8 @@ Choose a song in the editor's list. Select a region in the head waveform, or cli
 - **Undo** removes the most recent unsaved edit. Repeat to remove earlier edits; it does not undo a file already saved to disk.
 
 Adding and removing songs changes the editor's list. Removal does not delete files from disk. Reordering is managed in Timeline Builder.
+
+Selection follows the pointer only while the primary button is held. Releasing the button, losing window focus, or losing pointer capture ends the drag. Wheel zoom ends any active drag and clears that waveform's selection.
 
 ### Save each song
 
@@ -107,7 +109,7 @@ For ordinary manual list reordering, check and adjust SRT order as well. The spe
 
 ## Save and resume a project
 
-Export the project after adjusting the timeline. It records filenames, song order, sound boundaries, source positions, detection/gap settings, processing/output information, and subtitle correspondence. Version 1.1.0 continues to use project schema 2.
+Export the project after adjusting the timeline. It records filenames, song order, sound boundaries, source positions, detection/gap settings, processing/output information, and subtitle correspondence. Version 1.1.1 continues to use project schema 2.
 
 The JSON does not embed audio or SRT contents. It also does not retain unsaved Edge Fixer edits, edited badges, or native file-location handles. Keep your saved audio and subtitle files separately.
 

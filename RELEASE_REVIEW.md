@@ -1,4 +1,21 @@
-# Release Review: Album Clip Timeline Builder v1.1.0
+# Release Review: Album Clip Timeline Builder v1.1.1
+
+## Scope — 2026-11-14
+
+Version 1.1.1 fixes stuck waveform selection after pointer capture/focus loss and cancels active dragging before wheel zoom clears a selection. Left-button and pointer identity checks prevent hovering or unrelated pointers from changing the selection. Normal tail click-to-end selection remains available. Version labels, project export version, and Japanese/English guides are updated; project schema remains 2.
+
+The standalone Suno WAV Edge Fixer receives the same interaction fix in its separate v0.3.2 release.
+
+## Validation
+
+- The pointer regression test exercises 15 cases: exact tail endpoint click, dragging to/from the endpoint, capture loss, missed release, focus loss, wheel zoom while dragging, unrelated pointers, pointer cancellation, right click, normal head/tail selection, edit/undo, and a narrow viewport. The interaction fix passed in Chrome 157.0.8103.50 and Edge 157.0.4341.42 before packaging, with no application errors.
+- Release identity was checked in Chrome 157.0.8103.50: browser title, visible version badge and exported project version are `1.1.1`. Test audio loaded successfully. Documentation uses UTF-8 without BOM and its local links resolve.
+- The release uses the same nine-file package layout as v1.1.0. `scripts/package-release.ps1` builds from an explicit file list, extracts the archive, verifies source/extracted hashes, and writes a SHA-256 sidecar. Test audio and development scripts are excluded.
+- `tests/edge_pointer.cjs` can test an extracted release with `ALBUM_APP_DIR` set to its application folder. Platform focus/capture loss is simulated for reproducible coverage; physical device and OS-specific behavior still depends on the target environment.
+
+---
+
+# Historical release review: v1.1.0
 
 ## Package verification — 2026-10-14
 

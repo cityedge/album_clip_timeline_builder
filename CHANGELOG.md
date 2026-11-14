@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.1.1 — 2026-11-14
+
+- Fixed waveform selection continuing on hover after pointer capture or window focus was lost. Selection now also checks the pressed mouse button and active pointer.
+- Cancel an active waveform drag before wheel zoom clears the selection, preventing a subsequent pointer move from raising an error. Normal tail click-to-end selection is preserved.
+
 ## v1.1.0 — 2026-10-14
 
 - Packaged the integrated Timeline Builder and Edge Fixer as version 1.1.0.

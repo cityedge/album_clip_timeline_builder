@@ -1,4 +1,4 @@
-# Album Clip Timeline Builder v1.1.0 User Guide
+# Album Clip Timeline Builder v1.1.1 User Guide
 
 Album Clip Timeline Builder は、複数の音声クリップ（WAV、MP3など）をアルバム形式のタイムラインへ配置し、実音開始・実音終了を基準に曲間を整え、`album.wav`、`album_subtitles.srt`、`timesheet.txt`、`tracklist.txt`、`project.json`、`offset_image.txt` を出力するためのローカルHTMLアプリです。
 
@@ -46,6 +46,8 @@ ZIP全体を展開し、展開先の `index.html` をChromeまたはEdgeで開�
 ---
 
 ## 任意のEdge Fixerを使う / Optional Edge Fixer
+
+範囲選択は左ボタンを押している間だけ変更されます。ボタンを離す、画面のフォーカスが外れる、マウスの捕捉が解除されるとドラッグを終了します。ホイールで拡大・縮小すると、その波形の選択範囲を解除します。
 
 「先頭・末尾の確認・編集」は、音源を選ぶ前でも、配置後でも開けます。曲の追加・リストからの削除はできますが、並べ替えはTimeline Builderで行います。
 

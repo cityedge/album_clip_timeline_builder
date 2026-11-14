@@ -1,6 +1,10 @@
-# Album Clip Timeline Builder v1.1.0
+# Album Clip Timeline Builder v1.1.1
 
-## v1.1.0 / Integrated Edge Fixer
+## v1.1.1 / Integrated Edge Fixer
+
+v1.1.1では、マウスを離した後も波形の選択が追従する問題と、ドラッグ中のホイール操作によるエラーを修正しました。
+
+v1.1.1 fixes stuck waveform dragging after pointer capture/focus loss and errors when zooming during a drag.
 
 ZIP全体を展開し、`index.html` をChromeまたはEdgeで開くとTimeline Builderが起動します。「先頭・末尾の確認・編集」から任意のEdge Fixerを開けます。曲が空でも開いて、そこで音源を追加できます。
 
